@@ -65,14 +65,14 @@ RSpec::Matchers.define :journal_events_including do |*expected_events|
     ActiveSupport::Notifications.subscribed(callback, 'journaled.event.enqueue', &block)
 
     self.matches = actual.select do |a|
-      expected.any? { |e| values_match?(hash_including_recursive(e), a) }
+      expected.any? { |e| values_match?(hash_including_recursive(JSON.parse(e.to_json)), JSON.parse(a.to_json)) }
     end
 
     self.nonmatches = actual - matches
 
     exact_matches = matches.dup
     matches.count == expected.count && expected.all? do |e|
-      match, index = exact_matches.each_with_index.find { |a, _| values_match?(hash_including_recursive(e), a) }
+      match, index = exact_matches.each_with_index.find { |a, _| values_match?(hash_including_recursive(JSON.parse(e.to_json)), JSON.parse(a.to_json)) }
       exact_matches.delete_at(index) if match
     end && exact_matches.empty?
   end
